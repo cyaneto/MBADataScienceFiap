@@ -19,7 +19,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     #carrega o modelo pelo joblib
     model = joblib.load(file)
     
+    # se a musica ja noa tem os atribuots necessarios 
+        
+        # enriquece ela
+
+    # preve a categoria com base no modelo
     
+    # retorna a categoria
 
     return func.HttpResponse(
             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
