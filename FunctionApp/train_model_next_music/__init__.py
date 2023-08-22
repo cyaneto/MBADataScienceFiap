@@ -24,13 +24,16 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 
 def main(mytimer: func.TimerRequest) -> None:
 
+    # Puxa a base de dados para o algortimo, contendo todas as ouvidas 
+    # de todos os usuarios, e as musicas com suas caracteristicas
     df = get_base()
 
-
-
+    # separa como colunas de 
     train_df = df[model_columns+['user']]
 
+    # Numero de quantas musicas anteriorees serao levadas em contas no modelo
     dummies= int(os.environ['MODEL_DUMMIES'])
+    
     #faz a dummificação
     for d in range (dummies):
         for column in model_columns:
@@ -39,9 +42,6 @@ def main(mytimer: func.TimerRequest) -> None:
     #remove as colunas de modelo
     train_df= train_df[[ c for c in train_df if c not in  model_columns and c != 'user']].dropna()
 
-    # separa as variaveis de target e 
-    y= train_df[[c+'_0' for c in  model_columns]]
-    X = train_df[[c for c in  train_df.columns if c not in y.columns]]
 
     # Define the parameter grid for tuning the number of estimators
     param_grid = {'n_estimators': [10, 50, 100, 200, 500]}
@@ -49,34 +49,40 @@ def main(mytimer: func.TimerRequest) -> None:
     # passa em cada um dos parametros da musica
     for column in model_columns:
 
+        # separa as variaveis de target e train
+        # target: ultima musica ouvida
+        # train: as 14 musicas ouvidas antrs dessa
         y= train_df[column+'_0']
         X = train_df[[c for c in  train_df.columns if '_0' not in c]]
 
+        # se for um dado categorico usa um classificador, do contrario uam regressao
         if column in categorical_columns:
             rf = RandomForestClassifier()
         else:
             rf = RandomForestRegressor()
 
 
-        # Perform a grid search with cross-validation to find the best number of estimators
+        # Usa uma pesquisa de grade para escvolher o melhor numero de parametros
+        # para aquela caracteristica
         grid_search = GridSearchCV(rf, param_grid, cv=5)
         grid_search.fit(X, y)
 
-        # Get the best number of estimators
+        # Obtem o melhor numero
         best_n_estimators = grid_search.best_params_['n_estimators']
         print(f"Best number of estimators for {column}:", best_n_estimators)
 
-        # Train the Random Forest Classifier with the best number of estimators
+        # treina o modelo com esse melhor numero
         if column in categorical_columns:
             best_rf = RandomForestClassifier(n_estimators=best_n_estimators)
         else:
             best_rf = RandomForestRegressor(n_estimators=best_n_estimators)
         best_rf.fit(X, y)
 
-        # Make predictions with the trained model
+        # faz uma predição com esse melgor numero
         y_pred = best_rf.predict(X)
 
-        if column in categorical_columns:
+        # calcula a predição ou MSE, de acordo com o tipo de modelo
+        if column in categorical_columns:   
             # Calculate accuracy score
             accuracy = accuracy_score(y, y_pred)
             print(f"Accuracy  for {column}:", accuracy)
@@ -106,9 +112,11 @@ def main(mytimer: func.TimerRequest) -> None:
         if blob_client.exists():
             blob_client.delete_blob()
 
-        # salva o arquivo no azure
+        # salva o arquivo no azure para ser usado depois
         blob_client.upload_blob(file.getvalue(),  blob_type="BlockBlob")
 
+
+        # Manda os dados de precisao do modelo, para monitorar a precisao e reliability
         config= {
             'ENDPOINT': os.environ["COSMOS_NORMAL_ENDPOINT"],
             'PRIMARYKEY': os.environ["COSMOS_NORMAL_PRIMARYKEY"],
@@ -125,5 +133,5 @@ def main(mytimer: func.TimerRequest) -> None:
                 "id":str(uuid.uuid4())
                  }|({'accuracy': accuracy } if column in categorical_columns else {'mse':mse})
         
-        # sobe os dados no banco
+        # sobe os dados no banco de modelos
         result = upload_data(config, [model_db])

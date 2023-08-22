@@ -3,7 +3,7 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions
-azure-cosmos
+azure-cosmos == 3.2.0
 azure-storage-queue
 azure-storage-blob
 joblib
