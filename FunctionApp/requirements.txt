@@ -10,3 +10,5 @@ joblib
 pandas
 spotipy
 scikit-learn
+tensorflow
+protobuf==3.19.4

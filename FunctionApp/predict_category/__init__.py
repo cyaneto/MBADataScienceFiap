@@ -14,7 +14,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     blob_service_client = BlobServiceClient.from_connection_string(os.environ["AzureWebJobsStorage"])
     container_name = "modeldata"
     container_client = blob_service_client.get_container_client(container_name)
-    file.write(container_client.download_blob("rf_plalist_classification_model.joblib").readall())
+    file.write(container_client.download_blob("df_plalist_classification_model.joblib").readall())
 
     #carrega o modelo pelo joblib
     model = joblib.load(file)
