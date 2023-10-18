@@ -22,6 +22,7 @@ from spotify_lib import get_token
 def main(mytimer: func.TimerRequest) -> None:
     user=  "5e3b7511-4336-453e-8199-a4ec14956742"
  
+ 
     # instncia o blob
     blob_service_client = BlobServiceClient.from_connection_string(os.environ["AzureWebJobsStorage"])
     container_name = "last-listens"

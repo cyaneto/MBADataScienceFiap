@@ -9,6 +9,6 @@ azure-storage-blob
 joblib
 pandas
 spotipy
-scikit-learn
-tensorflow
+scikit-learn==1.2.2
+tensorflow-cpu
 protobuf==3.19.4

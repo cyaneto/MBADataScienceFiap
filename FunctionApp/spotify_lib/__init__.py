@@ -7,7 +7,7 @@ import time
 import pandas as pd
 import requests 
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 from cosmo_lib import retrieve_data
@@ -39,8 +39,10 @@ def enrich_songs(ids):
     chunk_size = int(os.environ["SPOTIFY_CHUNK_SIZE"])
 
     #instancia o cliente do spotify
-    client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret)
-    sp = spotipy.Spotify(client_credentials_manager= client_credentials_manager)
+    scope ='' # "user-read-currently-playing"
+    
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+
 
     features=[]
     #passa nos ids em chunks 
